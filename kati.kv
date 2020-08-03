@@ -1,0 +1,24 @@
+<lButton@Button>:
+    font_size : '25sp'
+    markup : True
+    text : 'Log In'
+    background_color: 0, 0.1, 1, .5
+
+<sButton@Button>:
+    font_size : '25sp'
+    markup : True
+    text : 'Sign In'
+    background_color: 1, 0.1, 0, .5
+
+
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
