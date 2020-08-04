@@ -2,6 +2,7 @@ import kivy
 kivy.require("1.10.1")
 
 from kivy.app import App
+from kivy_garden.mapview import MapView
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
@@ -37,7 +38,13 @@ class mGrid(GridLayout):
         self.add_widget(self.sgn)
         self.add_widget(self.lg)
 
-        #to LogIn
+    #to LogIn
+    #Confirmation after Log In
+    def ALGCCallback(self, instance ,*pos):
+        self.clear_widgets()
+        self.lg = MapView()
+        self.add_widget(self.lg)
+    #Log In Callback
     def LGCallback(self, instance, *pos):
         self.remove_widget(self.lg)
         self.remove_widget(self.sgn)
@@ -60,10 +67,16 @@ class mGrid(GridLayout):
         self.sgn = TextInput(multiline=False)
         self.add_widget(self.sgn)
         #Confirm Button
-        cnfr=Button(text='Confirm',font_size='25dp',background_color=[1,.1,0,.5])
+        cnfr=Button(text='Confirm',font_size='25dp',background_color=[1,.1,0,.5], on_press=self.ALGCCallback)
         self.add_widget(cnfr)
 
         #To SignIn
+    #Confirmation after Log In
+    def ASGNCCallback(self, instance ,*pos):
+        self.clear_widgets()
+        self.lg = MapView()
+        self.add_widget(self.lg)
+    #Sign In callback
     def SGCallback(self, instance, *pos):
         self.remove_widget(self.lg)
         self.remove_widget(self.sgn)
@@ -95,7 +108,7 @@ class mGrid(GridLayout):
         psswc = TextInput(multiline = False)
         self.add_widget(psswc)
         #Confirmation button
-        conf = Button(text='Confirm', font_size='25dp', background_color=[0,.1,1,.5])
+        conf = Button(text='Confirm', font_size='25dp', background_color=[0,.1,1,.5], on_press = self.ASGNCCallback)
         self.add_widget(conf)
 
 
