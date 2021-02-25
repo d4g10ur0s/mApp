@@ -1,5 +1,6 @@
 '''
 Ti den exei ginei:
+    Friend Request
     marker
     gps
     search mesw onomatos
@@ -80,8 +81,85 @@ class RV(RecycleView):
 #
 #Recycle View
 #
+#
+#gia friend requests
+#
+class FriendRequest:
+    _id_1=0
+    _id_2=0
+    _name_1=""
+    _name_2=""
+    _state_1="Pending"
+    _state_2="Pending"
 
+    def __init__(self,id_1=0,id_2=0,name_1="",name_2="",state_1="Pending",state_2="Pending"):
+        self._id_1 = id_1
+        self._id_2 = id_2
+        self._name_1 = name_1
+        self._name_2 = name_2
+        self._state_1 = state_1
+        self._state_2 = state_2
+    #
+    #setter
+    #
+    def set_id_1(self,id_1 = 0):
+        self._id_1 = id_1
+    def set_id_2(self,id_2 = 0):
+        self._id_2 = id_2
+    def set_name_1(self,name_1 = ""):
+        self._name_1 = name_1
+    def set_name_2(self,name_2 = ""):
+        self._name_2 = name_2
+    def set_state_1(self,state = 0):
+        if state == 0:
+            self._state_1 = "Pending"
+        elif state == 1:
+            self._state_1 = "Accepted"
+        else:
+            self._state_1 = "Rejected"
+    def set_state_2(self,state = 0):
+        if state == 0:
+            self._state_2 = "Pending"
+        elif state == 1:
+            self._state_2 = "Accepted"
+        else:
+            self._state_2 = "Rejected"
+    #
+    #setter
+    #
+    #
+    #getter
+    #
+    def get_id_1(self):
+        return self._id_1
+    def get_id_2(self):
+        return self._id_2
+    def get_name_1(self):
+        return self._name_1
+    def get_name_2(self):
+        return self._name_2
+    def get_state_1(self):
+        return self._state_1
+    def get_state_2(self):
+        return self._state_2
+    #
+    #getter
+    #
+    #
+    #friend request string
+    #
+    def friend_request_string(self):
+        return self._name_1+" "+self._state_1+" "+self._name_2+" "+self._state_2
+    #
+    #friend request string
+    #
+    #
+#
+#gia friend requests
+#
+#
 #events class
+#
 class Events:
     #event info
     _id = 0
@@ -346,7 +424,22 @@ class User:
         return self._event
     def get_on_event(self):
         return self._on_event
+    #gia friends
+    def get_friends(self):
+        return self._frnds
+    #gia friend requests
+    def get_friend_requests(self):
+        return self._frequests
 
+    #User String
+    def usr_string(self):
+        #einai h oxi se event
+        a = ""
+        if self._on_event:
+            a = "On event"
+        else:
+            a = "Not on event"
+        return self._username + " " + str(self._points) + " " + a
     #Location String
     def loc_string(self):
         return self.get_location().location_string()
@@ -376,8 +469,12 @@ class PointerApp(App):
                 btn.bind(on_press = self.profile_callback)#profile button
             if i == 2:
                 btn.bind(on_press = self.locations_callback)#gia known locations
+            if i == 3 :
+                btn.bind(on_press = self.friends_callback)#gia friends
             if i == 4:
                 btn.bind(on_press=self.events_callback)#gia known events
+            if i == 5:
+                btn.bind(on_press=self.friend_request_callback)#gia friend request
             self._epiloges.add_widget(btn)
         self._main_layout.add_widget( self._epiloges)
         return self._main_layout
@@ -421,6 +518,28 @@ class PointerApp(App):
         return self._main_layout
     #
     #gia profile
+    #
+    #
+    #gia friends
+    #
+    def friends_callback(self,instance,*pos,usr = User()):
+        #ann den uparxoun friends
+        if len(usr.get_friends()) == 0:
+            self._main_layout.clear_widgets()
+            a = BoxLayout()
+            a.add_widget(BackgroundLabel(text = "You have no friends..!\nBe more social..!"))
+            self._main_layout.add_widget(a)
+        else:
+            lst = []
+            for i in usr.get_friends():
+                a = RV_content(text = i.usr_string())
+                lst.append(a)
+                self._main_layout.clear_widgets()
+                self._main_layout.add_widget(RV(arr = lst))
+        self._main_layout.add_widget(self._epiloges)
+        return self._main_layout
+    #
+    #gia friends
     #
     #
     #gia locations
@@ -469,6 +588,32 @@ class PointerApp(App):
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
+    #
+    #Gia Events
+    #
+    #
+    #Gia Friend Request
+    #
+    def friend_request_callback(self,instance,*pos,usr = User()):
+        #vlepw ann yparxoun events
+        if len(usr.get_friend_requests()) == 0:
+            self._main_layout.clear_widgets()
+            a = BoxLayout()
+            a.add_widget(BackgroundLabel(text = "You have no friend requests."))
+            self._main_layout.add_widget(a)
+        else:
+            lst = []
+            for i in usr.get_friend_requests():
+                a = RV_content(text = i.friend_request_string())
+                lst.append(a)
+                self._main_layout.clear_widgets()
+                self._main_layout.add_widget(RV(arr = lst))
+
+        self._main_layout.add_widget(self._epiloges)
+        return self._main_layout
+    #
+    #Gia Friend Request
+    #
 
 if __name__ == '__main__':
     PointerApp().run()
