@@ -48,12 +48,35 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.recycleview import RecycleView
 
+
+#
+#Recycle View gia Friends
+#
+Builder.load_string('''
+<friends_rv@Button>:
+    font_size : '25dp'
+    background_color : .3,.5,.55,.85
+
+<frv>:
+    data : []
+    viewclass: 'friends_rv'
+    RecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+''')
+
+#
+#Recycle View gia Friends
+#
+
 #Recycle View
 Builder.load_string('''
 <RV_content@Button>:
-    l : None
-    font_size : '20dp'
-    background_color : .7,.1,.15,1
+    font_size : '25dp'
+    background_color : .3,.5,.55,.85
 
 <RV>:
     data : []
@@ -66,23 +89,55 @@ Builder.load_string('''
         orientation: 'vertical'
 ''')
 class RV_content(Button):
-
-    def minstance(self):
-        return str(self.text)
-    def set_l(self,l):
+    l = None
+    #prepei me kapoio tropo to button na krata to location
+    #otan to button patietai prepei na yparxei metavlhth
+    #t.w. na elegxetai to ann to button pati8hke h oxi
+    def __init__(self,l = None,**kwargs):
+        super(RV_content,self).__init__(**kwargs)
         self.l = l
-    def ret_l(self):
+    #
+    #getter
+    #
+    def get_text(self):
+        return str(self.text)
+    def get_l(self):
         return self.l
-
+    #
+    #getter
+    #
+    #
+#
+#Gia RV_content
+#
 class RV(RecycleView):
     def __init__(self,arr,**kwargs):
         super(RV, self).__init__(**kwargs)
-        self.data = [{'text': x.minstance()} for x in arr]
+        #pernaw text kai location
+        '''
+        to provlhma : Auto pou yparxei sto recycle view einai antigrafo tou RV_content...o kataskeyasths den leitourgei to idio
+                      Prepei me kapoio tropo na exw callback panw sto obj tou recycle view
+        tropoi pou den epiasan :
+                                1)to callback sto main kai xrhsh x.on_press
+                                2)
+        '''
+        self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'on_press' : self.location_profile_callback} for x in arr]
+        for x in arr:
+            print(x.get_l().location_string())
+    #
+    #Gia Location Profile
+    #
+    def location_profile_callback(self, instance, *pos):
+        #uparxei mia metavlhth h opoia apo8hkeuei to location
+         print("aaa")
+    #
+    #Gia Location Profile
+    #
 #
 #Recycle View
 #
 #
-#gia friend requests
+#Gia Friend Requests
 #
 class FriendRequest:
     _id_1=0
@@ -542,7 +597,7 @@ class PointerApp(App):
     #gia friends
     #
     #
-    #gia locations
+    #Gia Locations
     #
     def locations_callback(self,instance,*pos,usr = User()):
         #vlepw an exei locations
@@ -556,17 +611,16 @@ class PointerApp(App):
         else:
             lst = []
             for i in usr.get_locations():
-                a = RV_content(text = i.location_string())
-                a.set_l(i)
+                a = RV_content(i)
                 lst.append(a)
             self._main_layout.clear_widgets()
-            self._main_layout.add_widget(RV(arr = lst))
+            self._main_layout.add_widget( RV(arr = lst) )
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
-
-    #To profile tou location
-
+    #
+    #Gia Locations
+    #
     #
     #Gia Events
     #
@@ -605,6 +659,7 @@ class PointerApp(App):
             lst = []
             for i in usr.get_friend_requests():
                 a = RV_content(text = i.friend_request_string())
+                a.bind(on_press = self.location_profile_callback)
                 lst.append(a)
                 self._main_layout.clear_widgets()
                 self._main_layout.add_widget(RV(arr = lst))
@@ -614,6 +669,8 @@ class PointerApp(App):
     #
     #Gia Friend Request
     #
+
+
 
 if __name__ == '__main__':
     PointerApp().run()
