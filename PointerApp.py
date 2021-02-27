@@ -1,12 +1,11 @@
 '''
 Ti den exei ginei:
-    Friend Request
     marker
     gps
     search mesw onomatos
-    Location Profile
     Event Profile
     Friend Request RV
+    Friend Requests Handling
     Friends RV
     Options
 '''
@@ -53,10 +52,15 @@ from kivy.uix.recycleview import RecycleView
 #Recycle View gia Friends
 #
 Builder.load_string('''
-<friends_rv@Button>:
-    font_size : '25dp'
-    background_color : .3,.5,.55,.85
-
+<friends_rv@BoxLayout>:
+    profile_button : profile_button
+    user_label : user_label
+    Label:
+        id : user_label
+        font_size : '25dp'
+    Button :
+        id : profile_button
+        background_color : .3,.5,.55,.85
 <frv>:
     data : []
     viewclass: 'friends_rv'
@@ -90,12 +94,14 @@ Builder.load_string('''
 ''')
 class RV_content(Button):
     l = None
+    b = None
     #prepei me kapoio tropo to button na krata to location
     #otan to button patietai prepei na yparxei metavlhth
     #t.w. na elegxetai to ann to button pati8hke h oxi
-    def __init__(self,l = None,**kwargs):
+    def __init__(self,l = None,b = None,**kwargs):
         super(RV_content,self).__init__(**kwargs)
         self.l = l
+        self.b = b
     #
     #getter
     #
@@ -103,6 +109,10 @@ class RV_content(Button):
         return str(self.text)
     def get_l(self):
         return self.l
+    def on_pressed(self):
+        self.b(self.get_l())
+    def get_b(self):
+        return self.b
     #
     #getter
     #
@@ -114,25 +124,9 @@ class RV(RecycleView):
     def __init__(self,arr,**kwargs):
         super(RV, self).__init__(**kwargs)
         #pernaw text kai location
-        '''
-        to provlhma : Auto pou yparxei sto recycle view einai antigrafo tou RV_content...o kataskeyasths den leitourgei to idio
-                      Prepei me kapoio tropo na exw callback panw sto obj tou recycle view
-        tropoi pou den epiasan :
-                                1)to callback sto main kai xrhsh x.on_press
-                                2)
-        '''
-        self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'on_press' : self.location_profile_callback} for x in arr]
-        for x in arr:
-            print(x.get_l().location_string())
-    #
-    #Gia Location Profile
-    #
-    def location_profile_callback(self, instance, *pos):
-        #uparxei mia metavlhth h opoia apo8hkeuei to location
-         print("aaa")
-    #
-    #Gia Location Profile
-    #
+        #to callback exei perasei sto x
+        self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'b' : x.get_b(),'on_press' : x.on_pressed} for x in arr]
+
 #
 #Recycle View
 #
@@ -299,8 +293,9 @@ class Events:
     def event_string(self):
         return self._name + " " + str(self._points_g)+" "+str(self._points_r)+" "+str(self._cap)+" "+str(self._counter)+" "+str(self._creator)+" "+str(len(self._participate)) +"\n"
 
-
-#location class
+#
+#Location Class
+#
 class Location:
     #location info
     _id = 0
@@ -397,7 +392,10 @@ class Location:
         arr.append("Counter : " +str(self._counter))
         arr.append("Creator : " + str(self._creator))
         arr.append("Events : "+ str(len(self._events)))
-
+        return arr
+#
+#Location Class
+#
 #user class
 class User:
     #user info
@@ -575,7 +573,7 @@ class PointerApp(App):
     #gia profile
     #
     #
-    #gia friends
+    #Gia Friends
     #
     def friends_callback(self,instance,*pos,usr = User()):
         #ann den uparxoun friends
@@ -611,7 +609,8 @@ class PointerApp(App):
         else:
             lst = []
             for i in usr.get_locations():
-                a = RV_content(i)
+                a = RV_content(i,b = self.location_profile_callback)
+                a.bind(on_press = self.location_profile_callback)
                 lst.append(a)
             self._main_layout.clear_widgets()
             self._main_layout.add_widget( RV(arr = lst) )
@@ -620,6 +619,23 @@ class PointerApp(App):
         return self._main_layout
     #
     #Gia Locations
+    #
+    #
+    #Gia Location Profile
+    #
+    def location_profile_callback(self,l = Location()):
+        #uparxei mia metavlhth h opoia apo8hkeuei to location
+        #, auth perna ws parametros apo to koumpi
+        a = Location_Layout()
+        for i in l.loc_info_array():
+            a.add_widget(BackgroundLabel(text = i,size_hint_y = 0.2))#allazw kai to mege8os
+        #vgazw ola ta widgets
+        self._main_layout.clear_widgets()
+        self._main_layout.add_widget(a)
+        self._main_layout.add_widget(self._epiloges)
+        return self._main_layout
+    #
+    #Gia Location Profile
     #
     #
     #Gia Events
