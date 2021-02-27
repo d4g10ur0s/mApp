@@ -50,21 +50,32 @@ from kivy.uix.recycleview import RecycleView
 
 
 #
-#Recycle View gia Friends
+#Recycle View gia Friend Requests
 #
 Builder.load_string('''
-<friends_rv@BoxLayout>:
+<requests_rv@BoxLayout>:
     profile_button : profile_button
+    handle_button : accept_button
     user_label : user_label
+    orientation : 'vertical'
     Label:
         id : user_label
         font_size : '25dp'
     Button :
         id : profile_button
+        text : 'User Profile'
         background_color : .3,.5,.55,.85
-<frv>:
+    Button :
+        id : accept_button
+        text : 'Accept'
+        background_color : .3,.5,.55,.85
+    Button :
+        id : reject_button
+        text : 'Reject'
+        background_color : .3,.5,.55,.85
+<rrv>:
     data : []
-    viewclass: 'friends_rv'
+    viewclass: 'requests_rv'
     RecycleBoxLayout:
         default_size: None, dp(56)
         default_size_hint: 1, None
@@ -72,12 +83,69 @@ Builder.load_string('''
         height: self.minimum_height
         orientation: 'vertical'
 ''')
-
 #
-#Recycle View gia Friends
+#ti periexei to rrv
 #
+class requests_rv(BoxLayout):
+    f = None#friend request
+    b = None#callback gia profile
+    def __init__(self,f = None,b = None,**kwargs):
+        super(requests_rv,self).__init__(**kwargs)
+        self.f = f
+        self.b = b
+        #kanw bind ta callbacks
+        self.profile_button.bind(on_press = self.b)
+        self.accept_button.bind(on_press = self.accept_callback)
+        self.reject_button.bind(on_press = self.reject_callback)
+    #
+    #getter
+    #
+    def get_f(self):
+        return self.f
+    def get_b(self):
+        return self.b
+    def get_c(self):
+        return self.c
 
+    #
+    #getter
+    #
+    #
+    #accept callback
+    #
+    def accept_callback(self,instance,*pos):
+        self.f.set_state_1("Accepted")
+    #
+    #accept callback
+    #
+    #
+    #reject callback
+    #
+    def reject_callback(self,instance,*pos):
+        self.f.set_state_1("Rejected")
+    #
+    #reject callback
+    #
+    #
+#
+#ti periexei to rrv
+#
+#
+#to rrv
+#
+class rrv(RecycleView):
+    def __init__(self,arr,**kwargs):
+        super(rrv,self).__init__(**kwargs)
+        self.data = [{'text' : x.get_f().friend_request_string()} for x in arr]
+#
+#to rrv
+#
+#
+#Recycle View gia Friend Requests
+#
+#
 #Recycle View
+#
 Builder.load_string('''
 <RV_content@Button>:
     font_size : '25dp'
@@ -641,7 +709,7 @@ class PointerApp(App):
         #, auth perna ws parametros apo to koumpi
         a = Location_Layout()
         for i in l.loc_info_array():
-            a.add_widget(BackgroundLabel(text = i,size_hint_y = 0.2))#allazw kai to mege8os
+            a.add_widget(BackgroundLabel(text = i,size_hint_y = 0.3))#allazw kai to mege8os
         #vgazw ola ta widgets
         self._main_layout.clear_widgets()
         self._main_layout.add_widget(a)
@@ -689,10 +757,10 @@ class PointerApp(App):
             #ann uparxoun friend requests
             lst = []
             for i in usr.get_friend_requests():
-                a = RV_content(l = i,b = self.handle_friend_requests)
+                a = requests_rv(f = i,b = self.user_profile_callback)
                 lst.append(a)
                 self._main_layout.clear_widgets()
-                self._main_layout.add_widget(RV(arr = lst))
+                self._main_layout.add_widget(rrv(arr = lst))
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
