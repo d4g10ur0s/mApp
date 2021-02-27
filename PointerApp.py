@@ -40,7 +40,8 @@ class Profile_Layout(BoxLayout):
     pass
 class Location_Layout(BoxLayout):
     pass
-
+class Friend_Request_Layout(BoxLayout):
+    pass
 
 #gia recycle view
 from kivy.app import App
@@ -131,7 +132,7 @@ class RV(RecycleView):
 #Recycle View
 #
 #
-#Gia Friend Requests
+#Friend Requests Class
 #
 class FriendRequest:
     _id_1=0
@@ -140,6 +141,7 @@ class FriendRequest:
     _name_2=""
     _state_1="Pending"
     _state_2="Pending"
+    #isws valw timestamp
 
     def __init__(self,id_1=0,id_2=0,name_1="",name_2="",state_1="Pending",state_2="Pending"):
         self._id_1 = id_1
@@ -203,8 +205,19 @@ class FriendRequest:
     #friend request string
     #
     #
+    #Friend request Array
+    #
+    def friend_request_info_array(self):
+        arr = []
+        arr.append("You : " +self._name_1)
+        arr.append("From : " +self._name_2)
+        arr.append("State : " +self._state_1)
+        return arr
+    #
+    #Friend request Array
+    #
 #
-#gia friend requests
+#Friend Requests Class
 #
 #
 #events class
@@ -665,17 +678,18 @@ class PointerApp(App):
     #Gia Friend Request
     #
     def friend_request_callback(self,instance,*pos,usr = User()):
-        #vlepw ann yparxoun events
+        #vlepw ann yparxoun friend requests
         if len(usr.get_friend_requests()) == 0:
+            #ann den yparxoun friend requests
             self._main_layout.clear_widgets()
             a = BoxLayout()
             a.add_widget(BackgroundLabel(text = "You have no friend requests."))
             self._main_layout.add_widget(a)
         else:
+            #ann uparxoun friend requests
             lst = []
             for i in usr.get_friend_requests():
-                a = RV_content(text = i.friend_request_string())
-                a.bind(on_press = self.location_profile_callback)
+                a = RV_content(l = i,b = self.handle_friend_requests)
                 lst.append(a)
                 self._main_layout.clear_widgets()
                 self._main_layout.add_widget(RV(arr = lst))
@@ -685,8 +699,27 @@ class PointerApp(App):
     #
     #Gia Friend Request
     #
+    #
+    #Other user profile callback
+    #
+    def handle_friend_requests(self,f = FriendRequest()):
+        #diaxeirish tou state enos friend request
+        #mporw na dw profil allou user
+        #yparxei layout to opoio exei tis plhrofories tou friend request
+        #oti afora emena mporei na allaksei,mporw na dw profil allou user
+        a = Friend_Request_Layout()
+        for i in f.friend_request_info_array():
+            a.add_widget(BackgroundLabel(text = i))
+        #vazw 2 koumpia ena gia na dw allon xrhsth kai ena gia apodoxh,aporripsh h tpt
+        #gia allagh state
+        b = Epiloges_Button(text = "Change State")
+        #b.bind(self.state_change_callback)
+        #gia na dw profil tou user
+        u = Epiloges_Button(text = "User profile")
+        #u.bind(kati pou 8a mou dinei to profil tou allou user)
 
-
-
+    #
+    #Other user profile callback
+    #
 if __name__ == '__main__':
     PointerApp().run()
