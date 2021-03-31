@@ -8,6 +8,12 @@ Ti den exei ginei:
     Options
 '''
 
+'''
+Genika 8elw mia global metavlhth , h opoia 8a einai o user
+pou xrhsimopoiei to app thn dedomenh stigmh
+'''
+global App_Usr
+
 import kivy
 
 kivy.require("2.0.0")
@@ -233,20 +239,20 @@ Builder.load_string('''
 #
 #ti periexei to rrv
 #
-class friend_requests_content(BoxLayout):
+class friend_requests_content(RecycleKVIDsDataViewBehavior,BoxLayout):
     #8a prepei na kouvalaei to friend_request,to b_label,to accept_funct...
     f = None
     b_label = None
-    accept_funct = None
-    reject_funct = None
     user_funct = None
+    reject_funct = None
+    usr = None
 
-    def __init__(self,f = None,user_funct = None,reject_funct = None,accept_funct = None,**kwargs):
+    def __init__(self,f = None,user_funct = None,usr = None,reject_funct = None,**kwargs):
         super(friend_requests_content,self).__init__(**kwargs)
         self.f = f
-        self.accept_funct = accept_funct
-        self.reject_funct = reject_funct
+        self.usr = usr
         self.user_funct = user_funct
+        self.reject_funct = reject_funct
 
     #
     #setter
@@ -271,6 +277,16 @@ class friend_requests_content(BoxLayout):
     #getter
     #
     #
+    #reject callback
+    #
+    def reject_callback(self,*pos):
+        global App_Usr
+        self.f.set_state_1("Rejected")
+        self.reject_button.bind(on_press = self.reject_funct)
+        return self.reject_button.on_press()
+    #
+    #reject callback
+    #
     #
     #accept callback
     #
@@ -278,15 +294,6 @@ class friend_requests_content(BoxLayout):
         self.f.set_state_1("Accepted")
     #
     #accept callback
-    #
-    #
-    #reject callback
-    #
-    def reject_callback(self,*pos):
-        self.f.set_state_1("Rejected")
-    #
-    #reject callback
-    #
     #
 #
 #ti periexei to rrv
@@ -297,7 +304,7 @@ class friend_requests_content(BoxLayout):
 class friend_requests_rv(RecycleView):
     def __init__(self,arr,**kwargs):
         super(friend_requests_rv,self).__init__(**kwargs)
-        self.data = [{'b_label.text' : x.get_f().friend_request_string(),'reject_button.on_press' : x.reject_callback,'accept_button.on_press' : x.accept_callback,'profile_button.on_press' : x.get_user_f() } for x in arr]
+        self.data = [{'b_label.text' : x.get_f().friend_request_string(),'reject_button.on_press' : x.reject_callback ,'accept_button.on_press' : x.accept_callback,'profile_button.on_press' : x.get_user_f() } for x in arr]
 
 #
 #to rrv
@@ -646,7 +653,8 @@ class User:
     #gia friend requests
     def get_friend_requests(self):
         return self._frequests
-
+    def pop_friend_request(self, i = 0):
+        self._frequests.pop(i)
     #User String
     def usr_string(self):
         #einai h oxi se event
@@ -888,11 +896,13 @@ class PointerApp(App):
     #
     #Gia Friend Request
     #
-    def friend_request_callback(self,instance,*pos,usr = User()):
+    def friend_request_callback(self,*pos,usr = User(),**kwargs):
         #vlepw ann yparxoun friend requests
-        usr.set_frequests([FriendRequest(0,1,'tranpe','d4g10ur0s'),FriendRequest(2,1,'Pr','d4g10ur0s')])
+        global App_Usr
+        App_Usr = User()
+        App_Usr.set_frequests([FriendRequest(0,1,'tranpe','d4g10ur0s'),FriendRequest(2,1,'Pr','d4g10ur0s')])
 
-        if len(usr.get_friend_requests()) == 0:
+        if len(App_Usr.get_friend_requests()) == 0:
             #ann den yparxoun friend requests
             self._main_layout.clear_widgets()
             a = BoxLayout()
@@ -901,8 +911,16 @@ class PointerApp(App):
         else:
             #ann uparxoun friend requests
             lst = []
-            for i in usr.get_friend_requests():
-                a = friend_requests_content(f = i,user_funct = self.profile_callback)#pernw ws parametro to friend request
+            counter = 0
+            for i in App_Usr.get_friend_requests():
+                #diagrafw ola ta requests pou einai rejected.Meta 8a to paiksw me sundeseis
+                if i.get_state_1() == 'Rejected' :
+                    App_Usr.pop_friend_request(counter)
+                    counter-=1
+                else:
+                    counter+=1
+                #diagrafw ola ta requests pou einai rejected.Meta 8a to paiksw me sundeseis
+                a = friend_requests_content(f = i,user_funct = self.profile_callback,usr = App_Usr,reject_funct = self.friend_request_callback)#pernw ws parametro to friend request
                 lst.append(a)
             self._main_layout.clear_widgets()
             self._main_layout.add_widget(friend_requests_rv(arr = lst))
