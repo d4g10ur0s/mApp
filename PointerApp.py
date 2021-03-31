@@ -4,9 +4,7 @@ Ti den exei ginei:
     gps
     search mesw onomatos
     Event Profile
-    Friend Request RV
     Friend Requests Handling
-    Friends RV
     Options
 '''
 
@@ -16,6 +14,8 @@ kivy.require("2.0.0")
 
 from plyer import gps
 
+from kivy.properties import AliasProperty
+from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Label
@@ -47,116 +47,21 @@ class Friend_Request_Layout(BoxLayout):
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.recycleview import RecycleView
-
-
-#
-#Recycle View gia Friend Requests
-#
-Builder.load_string('''
-<requests_rv@BoxLayout>:
-    profile_button : profile_button
-    handle_button : accept_button
-    user_label : user_label
-    orientation : 'vertical'
-    Label:
-        id : user_label
-        font_size : '25dp'
-    Button :
-        id : profile_button
-        text : 'User Profile'
-        background_color : .3,.5,.55,.85
-    Button :
-        id : accept_button
-        text : 'Accept'
-        background_color : .3,.5,.55,.85
-    Button :
-        id : reject_button
-        text : 'Reject'
-        background_color : .3,.5,.55,.85
-<rrv>:
-    data : []
-    viewclass: 'requests_rv'
-    RecycleBoxLayout:
-        default_size: None, dp(56)
-        default_size_hint: 1, None
-        size_hint_y: None
-        height: self.minimum_height
-        orientation: 'vertical'
-''')
-#
-#ti periexei to rrv
-#
-class requests_rv(BoxLayout):
-    f = None#friend request
-    b = None#callback gia profile
-    def __init__(self,f = None,b = None,**kwargs):
-        super(requests_rv,self).__init__(**kwargs)
-        self.f = f
-        self.b = b
-        #kanw bind ta callbacks
-        self.profile_button.bind(on_press = self.b)
-        self.accept_button.bind(on_press = self.accept_callback)
-        self.reject_button.bind(on_press = self.reject_callback)
-    #
-    #getter
-    #
-    def get_f(self):
-        return self.f
-    def get_b(self):
-        return self.b
-    def get_c(self):
-        return self.c
-
-    #
-    #getter
-    #
-    #
-    #accept callback
-    #
-    def accept_callback(self,instance,*pos):
-        self.f.set_state_1("Accepted")
-    #
-    #accept callback
-    #
-    #
-    #reject callback
-    #
-    def reject_callback(self,instance,*pos):
-        self.f.set_state_1("Rejected")
-    #
-    #reject callback
-    #
-    #
-#
-#ti periexei to rrv
-#
-#
-#to rrv
-#
-class rrv(RecycleView):
-    def __init__(self,arr,**kwargs):
-        super(rrv,self).__init__(**kwargs)
-        self.data = [{'text' : x.get_f().friend_request_string()} for x in arr]
-#
-#to rrv
-#
-#
-#Recycle View gia Friend Requests
-#
+from kivy.uix.recycleview.views import RecycleKVIDsDataViewBehavior
 #
 #Recycle View
 #
 Builder.load_string('''
 <RV_content@Button>:
-    font_size : '25dp'
+    font_size : '20dp'
     background_color : .3,.5,.55,.85
 
 <RV>:
     data : []
     viewclass: 'RV_content'
     RecycleBoxLayout:
-        default_size: None, dp(56)
-        default_size_hint: 1, None
+        default_size: None, dp(65)
+        default_size_hint: 1,None
         size_hint_y: None
         height: self.minimum_height
         orientation: 'vertical'
@@ -195,7 +100,6 @@ class RV(RecycleView):
         #pernaw text kai location
         #to callback exei perasei sto x
         self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'b' : x.get_b(),'on_press' : x.on_pressed} for x in arr]
-
 #
 #Recycle View
 #
@@ -203,15 +107,15 @@ class RV(RecycleView):
 #Friend Requests Class
 #
 class FriendRequest:
-    _id_1=0
-    _id_2=0
-    _name_1=""
-    _name_2=""
-    _state_1="Pending"
-    _state_2="Pending"
+    _id_1 = 0
+    _id_2 = 0
+    _name_1 = ""
+    _name_2 = ""
+    _state_1 = "Pending"
+    _state_2 = "Pending"
     #isws valw timestamp
 
-    def __init__(self,id_1=0,id_2=0,name_1="",name_2="",state_1="Pending",state_2="Pending"):
+    def __init__(self,id_1 = 0,id_2 = 0,name_1 = "",name_2 = "",state_1 = "Pending",state_2 = "Pending"):
         self._id_1 = id_1
         self._id_2 = id_2
         self._name_1 = name_1
@@ -268,7 +172,7 @@ class FriendRequest:
     #friend request string
     #
     def friend_request_string(self):
-        return self._name_1+" "+self._state_1+" "+self._name_2+" "+self._state_2
+        return self._name_1 +" "+self._state_1+" "+self._name_2+" "+self._state_2
     #
     #friend request string
     #
@@ -288,7 +192,122 @@ class FriendRequest:
 #Friend Requests Class
 #
 #
-#events class
+#Recycle View gia Friend Requests
+#
+Builder.load_string('''
+<friend_requests_content@RecycleKVIDsDataViewBehavior+BoxLayout>:
+    b_label : b_label
+    profile_button : profile_button
+    accept_button : accept_button
+    reject_button : reject_button
+    orientation : 'horizontal'
+    BackgroundLabel :
+        id : b_label
+    Button :
+        id : profile_button
+        size_hint_x : .3
+        text : 'User Profile'
+        font_size : '20dp'
+        background_color : .3,.5,.55,.85
+    Button :
+        id : accept_button
+        size_hint_x : .2
+        text : 'Accept'
+        font_size : '20dp'
+        background_color : .3,.5,.55,.85
+    Button :
+        id : reject_button
+        size_hint_x : .2
+        text : 'Reject'
+        font_size : '20dp'
+        background_color : .3,.5,.55,.85
+<friend_requests_rv>:
+    viewclass: 'friend_requests_content'
+    RecycleBoxLayout:
+        default_size: None, dp(65)
+        default_size_hint: 1,None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+''')
+#
+#ti periexei to rrv
+#
+class friend_requests_content(BoxLayout):
+    #8a prepei na kouvalaei to friend_request,to b_label,to accept_funct...
+    f = None
+    b_label = None
+    accept_funct = None
+    reject_funct = None
+    user_funct = None
+
+    def __init__(self,f = None,user_funct = None,reject_funct = None,accept_funct = None,**kwargs):
+        super(friend_requests_content,self).__init__(**kwargs)
+        self.f = f
+        self.accept_funct = accept_funct
+        self.reject_funct = reject_funct
+        self.user_funct = user_funct
+
+    #
+    #setter
+    #
+    #
+    #setter
+    #
+    #
+    #getter
+    #
+    def get_blabel(self):
+        return self.b_label
+    def get_f(self):
+        return self.f#return friend request
+    def get_accept(self):
+        return self.accept_funct
+    def get_reject(self):
+        return self.reject_funct
+    def get_user_f(self):
+        return self.user_funct
+    #
+    #getter
+    #
+    #
+    #
+    #accept callback
+    #
+    def accept_callback(self,*pos):
+        self.f.set_state_1("Accepted")
+    #
+    #accept callback
+    #
+    #
+    #reject callback
+    #
+    def reject_callback(self,*pos):
+        self.f.set_state_1("Rejected")
+    #
+    #reject callback
+    #
+    #
+#
+#ti periexei to rrv
+#
+#
+#to rrv
+#
+class friend_requests_rv(RecycleView):
+    def __init__(self,arr,**kwargs):
+        super(friend_requests_rv,self).__init__(**kwargs)
+        self.data = [{'b_label.text' : x.get_f().friend_request_string(),'reject_button.on_press' : x.reject_callback,'accept_button.on_press' : x.accept_callback,'profile_button.on_press' : x.get_user_f() } for x in arr]
+
+#
+#to rrv
+#
+#
+#Recycle View gia Friend Requests
+#
+#
+#
+#Gia Events Class
 #
 class Events:
     #event info
@@ -304,7 +323,7 @@ class Events:
     _creator = None
     _participate = []
 
-    def __init__(self,id = 0,name = "",location = None,points_g = 0,points_r = 0,cap = 0,counter = 0,prv = False,creator = None,_participate = []):
+    def __init__(self,id = 0,name = "",location = None,points_g = 0,points_r = 0,cap = 0,counter = 0,prv = False,creator = None,participate = []):
         #event info
         self._id = id
         self._name = name
@@ -373,7 +392,60 @@ class Events:
     #
     def event_string(self):
         return self._name + " " + str(self._points_g)+" "+str(self._points_r)+" "+str(self._cap)+" "+str(self._counter)+" "+str(self._creator)+" "+str(len(self._participate)) +"\n"
+#
+#events class
+#
+#
+#Recycle View gia Events
+#
 
+Builder.load_string('''
+<event_content@RecycleKVIDsDataViewBehavior+GridLayout>:
+    rows : 3
+    b_label : b_label
+    participation_button : participation_button
+    profile_button : profile_button
+    BackgroundLabel :
+        id : b_label
+    Button :
+        id : participation_button
+        text : 'Participate'
+        font_size : '25dp'
+        background_color : .3,.5,.55,.85
+    Button :
+        id : profile_button
+        text : 'Event Profile'
+        font_size : '25dp'
+        background_color : .3,.5,.55,.85
+
+<Events_RV>:
+    data : []
+    viewclass: 'event_content'
+    RecycleBoxLayout:
+        default_size: None, dp(200)
+        default_size_hint: 1 ,None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+''')
+class event_content(RecycleKVIDsDataViewBehavior,GridLayout):
+    ev = None
+
+    def __init__(self,ev ,**kwargs):
+        super(event_content,self).__init__(**kwargs)
+        self.ev = ev
+
+    def get_ev(self):
+        return self.ev
+
+class Events_RV(RecycleView):
+
+    def __init__(self,arr = [],**kwargs):
+        super(Events_RV,self).__init__(**kwargs)
+        self.data = [{'b_label.text' : x.get_ev().event_string()}for x in arr]
+#
+#Recycle View gia Events
+#
 #
 #Location Class
 #
@@ -538,6 +610,14 @@ class User:
             pass
         else:
             self._on_event = True
+    def set_events(self,events = []):
+        self._events = events
+    #frequests
+    def set_frequests(self,frequests = []):
+        self._frequests = frequests
+    #other user info
+    def set_frnds(self,frnds = []):
+        self._frnds = frnds
     #
     #getter
     #
@@ -558,6 +638,8 @@ class User:
         return self._event
     def get_on_event(self):
         return self._on_event
+    def get_events(self):
+        return self._events
     #gia friends
     def get_friends(self):
         return self._frnds
@@ -573,11 +655,60 @@ class User:
             a = "On event"
         else:
             a = "Not on event"
-        return self._username + " " + str(self._points) + " " + a
+        return self._username +" "+self.loc_string() + " " + str(self._points) + " " + a
     #Location String
     def loc_string(self):
-        return self.get_location().location_string()
+        try :
+            a = self.get_location().location_string()
+        except :
+            return str(None)
+#
+#Gia User
+#
+#
+#Recycle View gia Friends
+#
+#name points location name event online show_profile
+Builder.load_string('''
+<friends_content@RecycleKVIDsDataViewBehavior+BoxLayout>:
+    b_label : b_label
+    profile_button : profile_button
+    BackgroundLabel:
+        id : b_label
+    Button :
+        id : profile_button
+        text : 'User Profile'
+        font_size : '25dp'
+        background_color : .3,.5,.55,.85
 
+<Friends_Rv>:
+    data : []
+    viewclass: 'friends_content'
+    RecycleBoxLayout:
+        default_size: dp(65), dp(65)
+        default_size_hint: 1,None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+''')
+class friends_content(RecycleKVIDsDataViewBehavior,BoxLayout):
+    friend = User()#o filos ws ontothta
+    def __init__(self,friend = User(),**kwargs):
+        super(friends_content,self).__init__(**kwargs)
+        self.friend = friend
+
+    #gia na parw to string tou User
+    def get_user_string(self):
+        return self.friend.usr_string()
+
+class Friends_Rv(RecycleView):
+
+    def __init__(self,arr,**kwargs):
+        super(Friends_Rv,self).__init__(**kwargs)
+        self.data = [{'b_label.text' : x.get_user_string()}for x in arr]
+#
+#Recycle View gia Friends
+#
 class PointerApp(App):
 
     _main_layout = None#to arxiko layout
@@ -657,6 +788,12 @@ class PointerApp(App):
     #Gia Friends
     #
     def friends_callback(self,instance,*pos,usr = User()):
+        ###
+        temp = []
+        for x in range(60):
+            temp.append(User(id = x,username = str(x)))
+        usr.set_frnds(temp)
+        ###
         #ann den uparxoun friends
         if len(usr.get_friends()) == 0:
             self._main_layout.clear_widgets()
@@ -666,14 +803,14 @@ class PointerApp(App):
         else:
             lst = []
             for i in usr.get_friends():
-                a = RV_content(text = i.usr_string())
+                a = friends_content(i)
                 lst.append(a)
-                self._main_layout.clear_widgets()
-                self._main_layout.add_widget(RV(arr = lst))
+            self._main_layout.clear_widgets()
+            self._main_layout.add_widget(Friends_Rv(arr = lst))
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
     #
-    #gia friends
+    #gia Friends
     #
     #
     #Gia Locations
@@ -722,8 +859,14 @@ class PointerApp(App):
     #Gia Events
     #
     def events_callback(self,instance,*pos,usr = User() ):
+        #
+        temp = []
+        for x in range(60):
+            temp.append(Events(x,str(x)))
+        usr.set_events(temp)
+        #
         #vlepw ann yparxoun events
-        if usr.get_event() == None:
+        if len(usr.get_events()) == 0:
             #den yparxoun gnwsta events
             self._main_layout.clear_widgets()
             a = BoxLayout()
@@ -732,10 +875,10 @@ class PointerApp(App):
         else:
             lst = []
             for i in usr.get_events():
-                a = RV_content(text = i.event_string())
+                a = event_content(ev = i)
                 lst.append(a)
-                self._main_layout.clear_widgets()
-                self._main_layout.add_widget(RV(arr = lst))
+            self._main_layout.clear_widgets()
+            self._main_layout.add_widget(Events_RV(arr = lst))
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
@@ -747,6 +890,8 @@ class PointerApp(App):
     #
     def friend_request_callback(self,instance,*pos,usr = User()):
         #vlepw ann yparxoun friend requests
+        usr.set_frequests([FriendRequest(0,1,'tranpe','d4g10ur0s'),FriendRequest(2,1,'Pr','d4g10ur0s')])
+
         if len(usr.get_friend_requests()) == 0:
             #ann den yparxoun friend requests
             self._main_layout.clear_widgets()
@@ -757,10 +902,10 @@ class PointerApp(App):
             #ann uparxoun friend requests
             lst = []
             for i in usr.get_friend_requests():
-                a = requests_rv(f = i,b = self.user_profile_callback)
+                a = friend_requests_content(f = i,user_funct = self.profile_callback)#pernw ws parametro to friend request
                 lst.append(a)
-                self._main_layout.clear_widgets()
-                self._main_layout.add_widget(rrv(arr = lst))
+            self._main_layout.clear_widgets()
+            self._main_layout.add_widget(friend_requests_rv(arr = lst))
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
