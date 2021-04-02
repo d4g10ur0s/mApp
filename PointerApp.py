@@ -58,13 +58,13 @@ from kivy.uix.recycleview.views import RecycleKVIDsDataViewBehavior
 #Recycle View
 #
 Builder.load_string('''
-<RV_content@Button>:
+<locations_content@Button+RecycleKVIDsDataViewBehavior>:
     font_size : '20dp'
     background_color : .3,.5,.55,.85
 
-<RV>:
+<locations_rv>:
     data : []
-    viewclass: 'RV_content'
+    viewclass: 'locations_content'
     RecycleBoxLayout:
         default_size: None, dp(65)
         default_size_hint: 1,None
@@ -72,27 +72,27 @@ Builder.load_string('''
         height: self.minimum_height
         orientation: 'vertical'
 ''')
-class RV_content(Button):
-    l = None
-    b = None
+class locations_content(Button,RecycleKVIDsDataViewBehavior):
+    _l = None
+    _b = None
     #prepei me kapoio tropo to button na krata to location
     #otan to button patietai prepei na yparxei metavlhth
     #t.w. na elegxetai to ann to button pati8hke h oxi
     def __init__(self,l = None,b = None,**kwargs):
-        super(RV_content,self).__init__(**kwargs)
-        self.l = l
-        self.b = b
+        super(locations_content,self).__init__(**kwargs)
+        self._l = l
+        self._b = b
     #
     #getter
     #
     def get_text(self):
         return str(self.text)
     def get_l(self):
-        return self.l
+        return self._l
     def on_pressed(self):
-        self.b(self.get_l())
+        self._b(self.get_l())#klhsh tou callback
     def get_b(self):
-        return self.b
+        return self._b
     #
     #getter
     #
@@ -100,9 +100,9 @@ class RV_content(Button):
 #
 #Gia RV_content
 #
-class RV(RecycleView):
+class locations_rv(RecycleView):
     def __init__(self,arr,**kwargs):
-        super(RV, self).__init__(**kwargs)
+        super(locations_rv, self).__init__(**kwargs)
         #pernaw text kai location
         #to callback exei perasei sto x
         self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'b' : x.get_b(),'on_press' : x.on_pressed} for x in arr]
@@ -273,6 +273,8 @@ class friend_requests_content(RecycleKVIDsDataViewBehavior,BoxLayout):
         return self.reject_funct
     def get_user_f(self):
         return self.user_funct
+    def get_request_state(self):
+        return self.f.get_state_1()
     #
     #getter
     #
@@ -281,9 +283,7 @@ class friend_requests_content(RecycleKVIDsDataViewBehavior,BoxLayout):
     #
     def reject_callback(self,*pos):
         global App_Usr
-        self.f.set_state_1("Rejected")
-        self.reject_button.bind(on_press = self.reject_funct)
-        return self.reject_button.on_press()
+        self.parent.remove_widget(self)
     #
     #reject callback
     #
@@ -399,6 +399,23 @@ class Events:
     #
     def event_string(self):
         return self._name + " " + str(self._points_g)+" "+str(self._points_r)+" "+str(self._cap)+" "+str(self._counter)+" "+str(self._creator)+" "+str(len(self._participate)) +"\n"
+    #
+    #event string
+    #
+    #
+    #User participation
+    #
+    def user_to_participate(self,usr = None):
+        if usr not in self._participate and not(usr == None):
+            self._participate.append(usr)
+            return True
+        else:
+            return False
+    #
+    #User participation
+    #
+
+
 #
 #events class
 #
@@ -436,20 +453,44 @@ Builder.load_string('''
         orientation: 'vertical'
 ''')
 class event_content(RecycleKVIDsDataViewBehavior,GridLayout):
-    ev = None
+    _ev = None
+    _pfc = None
 
-    def __init__(self,ev ,**kwargs):
+    def __init__(self,ev,pfc,**kwargs):
         super(event_content,self).__init__(**kwargs)
-        self.ev = ev
-
+        self._ev = ev
+        self._pcf = pfc
+    #
+    #getter
+    #
     def get_ev(self):
-        return self.ev
+        return self._ev
+    #
+    #getter
+    #
+    #
+    #button behaviour
+    #
+    def participate_pressed(self):
+        global App_Usr
 
+        if self._ev.user_to_participate(App_Usr):
+            #o user den summetexei
+            pass
+        else:
+            #o user hdh summetexei
+            pass
+    def profile_pressed(self):
+        global App_usr
+        self._pfc(usr = App_Usr)
+    #
+    #button behaviour
+    #
 class Events_RV(RecycleView):
 
     def __init__(self,arr = [],**kwargs):
         super(Events_RV,self).__init__(**kwargs)
-        self.data = [{'b_label.text' : x.get_ev().event_string()}for x in arr]
+        self.data = [{'b_label.text' : x.get_ev().event_string(),'participation_button.on_press' : x.participate_pressed}for x in arr]
 #
 #Recycle View gia Events
 #
@@ -700,20 +741,34 @@ Builder.load_string('''
         orientation: 'vertical'
 ''')
 class friends_content(RecycleKVIDsDataViewBehavior,BoxLayout):
-    friend = User()#o filos ws ontothta
-    def __init__(self,friend = User(),**kwargs):
+    _friend = User()#o filos ws ontothta
+    _pfc = None #profile_callback
+    def __init__(self,friend = User(),pfc = None,**kwargs):
         super(friends_content,self).__init__(**kwargs)
-        self.friend = friend
-
+        self._friend = friend
+        self._pfc = pfc
+    #
+    #getter
+    #
     #gia na parw to string tou User
     def get_user_string(self):
-        return self.friend.usr_string()
-
+        return self._friend.usr_string()
+    #
+    #getter
+    #
+    #
+    #on_press
+    #
+    def on_pressed(self):
+        return self._pfc(instance = None,usr = self._friend)
+    #
+    #on_press
+    #
 class Friends_Rv(RecycleView):
 
     def __init__(self,arr,**kwargs):
         super(Friends_Rv,self).__init__(**kwargs)
-        self.data = [{'b_label.text' : x.get_user_string()}for x in arr]
+        self.data = [{'b_label.text' : x.get_user_string(),'profile_button.on_press' : x.on_pressed}for x in arr]
 #
 #Recycle View gia Friends
 #
@@ -724,6 +779,8 @@ class PointerApp(App):
 
     def build(self):
         global epiloges_arr
+        global App_Usr
+        App_Usr = User(0,"d4gl4s")
         #
         #gia gps
         #gps.configure(on_location = self.on_gps_location)
@@ -766,7 +823,15 @@ class PointerApp(App):
         return self._main_layout
 
     #gia profile
-    def profile_callback(self,instance,*pos,usr = User()):
+    def profile_callback(self,instance,*pos,usr = None):
+        global App_Usr
+        #vazw temp?
+        temp = App_Usr#apo8hkeuw se temp ton app User
+        if usr == None:
+            pass
+        else:
+            App_Usr = usr
+        #vazw temp?
         #allazw to _main_layout
         self._main_layout.clear_widgets()
 
@@ -774,20 +839,24 @@ class PointerApp(App):
         for i in range(0,5):
             #vriskw ti text 8a valw
             if i==0 :
-                pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.get_id()),size_hint_y = 0.3 ) )#gia id
+                pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.get_id()),size_hint_y = 0.3 ) )#gia id
             elif i==1 :
-                pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.get_username() ) ,size_hint_y = 0.3) )#gia username
+                pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.get_username() ) ,size_hint_y = 0.3) )#gia username
             elif i == 2:
-                pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.get_points()) ,size_hint_y = 0.3) )#gia points
+                pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.get_points()) ,size_hint_y = 0.3) )#gia points
             elif i == 3:
-                if usr.get_location()==None:
-                    pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.get_location() ) ,size_hint_y = 0.3) )#gia location
+                if App_Usr.get_location()==None:
+                    pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.get_location() ) ,size_hint_y = 0.3) )#gia location
                 else:
-                    pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.loc_string() ) ,size_hint_y = 0.3) )#gia location
+                    pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.loc_string() ) ,size_hint_y = 0.3) )#gia location
             else:
-                pl.add_widget(BackgroundLabel(text = user_info[i] + str(usr.get_on_event()) ,size_hint_y = 0.3) )#an einai se event
+                pl.add_widget(BackgroundLabel(text = user_info[i] + str(App_Usr.get_on_event()) ,size_hint_y = 0.3) )#an einai se event
         self._main_layout.add_widget(pl)
         self._main_layout.add_widget(self._epiloges)
+
+        #vazw kanonikh timh se App_Usr
+        App_Usr = temp
+        #vazw kanonikh timh se App_Usr
         return self._main_layout
     #
     #gia profile
@@ -795,23 +864,24 @@ class PointerApp(App):
     #
     #Gia Friends
     #
-    def friends_callback(self,instance,*pos,usr = User()):
+    def friends_callback(self,instance,*pos):
         ###
+        global App_Usr
         temp = []
         for x in range(60):
             temp.append(User(id = x,username = str(x)))
-        usr.set_frnds(temp)
+        App_Usr.set_frnds(temp)
         ###
         #ann den uparxoun friends
-        if len(usr.get_friends()) == 0:
+        if len(App_Usr.get_friends()) == 0:
             self._main_layout.clear_widgets()
             a = BoxLayout()
             a.add_widget(BackgroundLabel(text = "You have no friends..!\nBe more social..!"))
             self._main_layout.add_widget(a)
         else:
             lst = []
-            for i in usr.get_friends():
-                a = friends_content(i)
+            for i in App_Usr.get_friends():
+                a = friends_content(i,pfc = self.profile_callback)#pernw ws parametro User
                 lst.append(a)
             self._main_layout.clear_widgets()
             self._main_layout.add_widget(Friends_Rv(arr = lst))
@@ -823,10 +893,11 @@ class PointerApp(App):
     #
     #Gia Locations
     #
-    def locations_callback(self,instance,*pos,usr = User()):
+    def locations_callback(self,instance,*pos):
         #vlepw an exei locations
-        usr.set_locations([Location(0,"kati"),Location(1,"kati allo")])
-        if len(usr.get_locations()) == 0:
+        global App_Usr
+        App_Usr.set_locations([Location(0,"kati"),Location(1,"kati allo")])
+        if len(App_Usr.get_locations()) == 0:
             #an den exei locations
             self._main_layout.clear_widgets()
             a = BoxLayout()
@@ -834,12 +905,11 @@ class PointerApp(App):
             self._main_layout.add_widget(a)
         else:
             lst = []
-            for i in usr.get_locations():
-                a = RV_content(i,b = self.location_profile_callback)
-                a.bind(on_press = self.location_profile_callback)
+            for i in App_Usr.get_locations():
+                a = locations_content(i,b = self.location_profile_callback)#pernw ws parametroys location kai callback
                 lst.append(a)
             self._main_layout.clear_widgets()
-            self._main_layout.add_widget( RV(arr = lst) )
+            self._main_layout.add_widget( locations_rv(arr = lst) )
 
         self._main_layout.add_widget(self._epiloges)
         return self._main_layout
@@ -866,15 +936,17 @@ class PointerApp(App):
     #
     #Gia Events
     #
-    def events_callback(self,instance,*pos,usr = User() ):
+    def events_callback(self,instance,*pos):
+        global App_Usr
+
         #
         temp = []
         for x in range(60):
             temp.append(Events(x,str(x)))
-        usr.set_events(temp)
+        App_Usr.set_events(temp)
         #
         #vlepw ann yparxoun events
-        if len(usr.get_events()) == 0:
+        if len(App_Usr.get_events()) == 0:
             #den yparxoun gnwsta events
             self._main_layout.clear_widgets()
             a = BoxLayout()
@@ -882,7 +954,7 @@ class PointerApp(App):
             self._main_layout.add_widget(a)
         else:
             lst = []
-            for i in usr.get_events():
+            for i in App_Usr.get_events():
                 a = event_content(ev = i)
                 lst.append(a)
             self._main_layout.clear_widgets()
@@ -892,6 +964,53 @@ class PointerApp(App):
         return self._main_layout
     #
     #Gia Events
+    #
+    #
+    #Gia Event profile
+    #
+    def event_profile_callback(self,*pos,ev = None):
+        global App_Usr
+        self._main_layout.clear_widgets()
+
+        pl = Profile_Layout()
+        for i in range(9):
+            if i == 1:
+                pl.add_widget(BackgroundLabel(text ="Id : " + str(ev.get_id())) )
+            elif i == 2:
+                pl.add_widget(BackgroundLabel(text = "Name : " + str(ev.get_name()) ) )
+            elif i == 3:
+                if ev.get_location() == None:#mono gia to debug-Build
+                    pl.add_widget(BackgroundLabel(text = "Location : " ) )
+                else:
+                    pl.add_widget(BackgroundLabel(text = "Location : " + str(ev.get_location().location_string()) ) )
+            elif i == 4:
+                pl.add_widget(BackgroundLabel(text = "Points Gained : " + str(ev.get_points_g()) ) )
+            elif i == 5:
+                pl.add_widget(BackgroundLabel(text = "Points Required : " + str(ev.get_points_r()) ) )
+            elif i == 6:
+                pl.add_widget(BackgroundLabel(text = "Capacity : " + str(ev.get_cap()) + "\\" +str(ev.get_counter()) ) )
+            elif i == 7:
+                if ev.get_prv() == True:
+                    pl.add_widget(BackgroundLabel(text = "Private Event"))
+                else:
+                    pl.add_widget(BackgroundLabel(text = "Public Event"))
+            elif i == 8:
+                    if ev.get_creator() == None :#gia debugging mono
+                        pl.add_widget(BackgroundLabel(text = "Creator : None" ) ) )
+                    else:
+                        pl.add_widget(BackgroundLabel(text = "Creator : " + str(ev.get_creator().get_user_string() ) ) )
+            else:
+                if App_Usr in ev.get_usrs:
+                    pl.add_widget(BackgroundLabel(text = "You are a participant."))
+                else:
+                    pl.add_widget(BackgroundLabel(text = "You are not a participant."))
+
+            #vazw ta widgets
+            self._main_layout.add_widget(pl)
+            self._main_layout.add_widget(self._epiloges)
+            return self._main_layout
+    #
+    #Gia Event profile
     #
     #
     #Gia Friend Request
