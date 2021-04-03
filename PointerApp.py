@@ -105,7 +105,7 @@ class locations_rv(RecycleView):
         super(locations_rv, self).__init__(**kwargs)
         #pernaw text kai location
         #to callback exei perasei sto x
-        self.data = [{'text': x.get_l().location_string(),'l' : x.get_l(),'b' : x.get_b(),'on_press' : x.on_pressed} for x in arr]
+        self.data = [{'text': x.get_l().location_string(),'_l' : x.get_l(),'_b' : x.get_b(),'on_press' : x.on_pressed} for x in arr]
 #
 #Recycle View
 #
@@ -379,6 +379,8 @@ class Events:
         return self._name
     def get_points(self):
         return (self._points_g,self._points_r)
+    def get_location(self):
+        return self._location
     def get_cap(self):
         return self._cap
     def get_counter(self):
@@ -405,9 +407,15 @@ class Events:
     #
     #User participation
     #
+    def add_usr(self,usr = None):
+        global App_Usr
+        if not self.user_to_participate(App_Usr):
+            pass
+        else:
+            self._participate.append(App_Usr)
     def user_to_participate(self,usr = None):
         if usr not in self._participate and not(usr == None):
-            self._participate.append(usr)
+            #self._participate.append(usr)
             return True
         else:
             return False
@@ -456,15 +464,17 @@ class event_content(RecycleKVIDsDataViewBehavior,GridLayout):
     _ev = None
     _pfc = None
 
-    def __init__(self,ev,pfc,**kwargs):
+    def __init__(self,ev = None,pfc = None,**kwargs):
         super(event_content,self).__init__(**kwargs)
         self._ev = ev
-        self._pcf = pfc
+        self._pfc = pfc
     #
     #getter
     #
     def get_ev(self):
         return self._ev
+    def get_pfc(self):
+        return self._pfc
     #
     #getter
     #
@@ -476,13 +486,14 @@ class event_content(RecycleKVIDsDataViewBehavior,GridLayout):
 
         if self._ev.user_to_participate(App_Usr):
             #o user den summetexei
-            pass
+            App_Usr.set_event(self._ev)
+            self._ev.add_usr(App_Usr)
         else:
             #o user hdh summetexei
             pass
     def profile_pressed(self):
-        global App_usr
-        self._pfc(usr = App_Usr)
+        global App_Usr
+        self._pfc(ev = self.get_ev())
     #
     #button behaviour
     #
@@ -490,7 +501,7 @@ class Events_RV(RecycleView):
 
     def __init__(self,arr = [],**kwargs):
         super(Events_RV,self).__init__(**kwargs)
-        self.data = [{'b_label.text' : x.get_ev().event_string(),'participation_button.on_press' : x.participate_pressed}for x in arr]
+        self.data = [{'b_label.text' : x.get_ev().event_string(),'_ev' : x.get_ev() ,'_pfc' : x.get_pfc(),'participation_button.on_press' : x.participate_pressed,'profile_button.on_press' : x.profile_pressed}for x in arr]
 #
 #Recycle View gia Events
 #
@@ -955,7 +966,8 @@ class PointerApp(App):
         else:
             lst = []
             for i in App_Usr.get_events():
-                a = event_content(ev = i)
+                a = event_content(i,pfc = self.event_profile_callback)
+                a.get_pfc()
                 lst.append(a)
             self._main_layout.clear_widgets()
             self._main_layout.add_widget(Events_RV(arr = lst))
@@ -972,43 +984,44 @@ class PointerApp(App):
         global App_Usr
         self._main_layout.clear_widgets()
 
-        pl = Profile_Layout()
-        for i in range(9):
+        pl = Location_Layout()
+        for i in range(1,10):
+            print(str(i))
             if i == 1:
-                pl.add_widget(BackgroundLabel(text ="Id : " + str(ev.get_id())) )
+                pl.add_widget(BackgroundLabel(text ="Id : " + str(ev.get_id()),size_hint_y = 0.2) )
             elif i == 2:
-                pl.add_widget(BackgroundLabel(text = "Name : " + str(ev.get_name()) ) )
+                pl.add_widget(BackgroundLabel(text = "Name : " + str(ev.get_name()) ,size_hint_y = 0.2) )
             elif i == 3:
                 if ev.get_location() == None:#mono gia to debug-Build
-                    pl.add_widget(BackgroundLabel(text = "Location : " ) )
+                    pl.add_widget(BackgroundLabel(text = "Location : ",size_hint_y = 0.2 ) )
                 else:
-                    pl.add_widget(BackgroundLabel(text = "Location : " + str(ev.get_location().location_string()) ) )
+                    pl.add_widget(BackgroundLabel(text = "Location : " + str(ev.get_location().location_string()),size_hint_y = 0.2 ) )
             elif i == 4:
-                pl.add_widget(BackgroundLabel(text = "Points Gained : " + str(ev.get_points_g()) ) )
+                pl.add_widget(BackgroundLabel(text = "Points Gained : " + str(ev.get_points_g()) ,size_hint_y = 0.2) )
             elif i == 5:
-                pl.add_widget(BackgroundLabel(text = "Points Required : " + str(ev.get_points_r()) ) )
+                pl.add_widget(BackgroundLabel(text = "Points Required : " + str(ev.get_points_r()) ,size_hint_y = 0.2) )
             elif i == 6:
-                pl.add_widget(BackgroundLabel(text = "Capacity : " + str(ev.get_cap()) + "\\" +str(ev.get_counter()) ) )
+                pl.add_widget(BackgroundLabel(text = "Capacity : " + str(ev.get_cap()) + "\\" +str(ev.get_counter()) ,size_hint_y = 0.2) )
             elif i == 7:
                 if ev.get_prv() == True:
-                    pl.add_widget(BackgroundLabel(text = "Private Event"))
+                    pl.add_widget(BackgroundLabel(text = "Private Event",size_hint_y = 0.2))
                 else:
-                    pl.add_widget(BackgroundLabel(text = "Public Event"))
+                    pl.add_widget(BackgroundLabel(text = "Public Event",size_hint_y = 0.2))
             elif i == 8:
                     if ev.get_creator() == None :#gia debugging mono
-                        pl.add_widget(BackgroundLabel(text = "Creator : None" ) ) )
+                        pl.add_widget(BackgroundLabel(text = "Creator : None" ,size_hint_y = 0.2) )
                     else:
-                        pl.add_widget(BackgroundLabel(text = "Creator : " + str(ev.get_creator().get_user_string() ) ) )
+                        pl.add_widget(BackgroundLabel(text = "Creator : " + str(ev.get_creator().get_user_string(),size_hint_y = 0.2 ) ) )
             else:
-                if App_Usr in ev.get_usrs:
-                    pl.add_widget(BackgroundLabel(text = "You are a participant."))
+                if App_Usr in ev.get_users():
+                    pl.add_widget(BackgroundLabel(text = "You are a participant.",size_hint_y = 0.2))
                 else:
-                    pl.add_widget(BackgroundLabel(text = "You are not a participant."))
+                    pl.add_widget(BackgroundLabel(text = "You are not a participant.",size_hint_y = 0.2))
 
-            #vazw ta widgets
-            self._main_layout.add_widget(pl)
-            self._main_layout.add_widget(self._epiloges)
-            return self._main_layout
+        #vazw ta widgets
+        self._main_layout.add_widget(pl)
+        self._main_layout.add_widget(self._epiloges)
+        return self._main_layout
     #
     #Gia Event profile
     #
